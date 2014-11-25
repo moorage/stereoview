@@ -29,3 +29,8 @@ This directory is the source of potree.  Whenever updating, just drag and drop o
 * Potree https://github.com/potree/potree is the OpenGL viewer for converted files
 * PotreeConverter https://github.com/potree/PotreeConverter needed to convert `.ply` to potree-compatible formats (have yet to figure out the correct option values to replicate MeshLab)
 
+# Running PotreeConverter
+
+Example:
+
+ `~/PATH_TO/PotreeConverter/build/PotreeConverter/PotreeConverter -o ~/PATH_TO/stereoview/public/js/scene --source ~/Desktop/out3.ply`
