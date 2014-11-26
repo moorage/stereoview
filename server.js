@@ -84,4 +84,4 @@ var server = http.createServer(function(request, response) {
 });
  
 server.listen(8000);
-console.log("Server is listening");
+console.log("Server is listening on localhost:8000");

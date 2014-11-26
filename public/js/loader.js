@@ -1,5 +1,5 @@
-var defaultPointSize = 0.03;
-var defaultLOD = 15;
+var defaultPointSize = 0.04;
+var defaultLOD = 10000;
 var pointcloudPath = "/js/scene/cloud.js";
 // var pointcloudPath = "/js/scene/out1.ply"; // potree can't read .ply files =[
    
@@ -21,9 +21,9 @@ function init(){
   document.body.appendChild(renderer.domElement);
 
   // camera and controls
-  camera.position.set(1, 7, 7);
+  camera.position.set(1, 5, 1);
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 4, 0 );
+  controls.target.set(0, 0, 0 );
   camera.lookAt(controls.target);
 
   // load pointcloud
@@ -33,9 +33,9 @@ function init(){
   scene.add(pointcloud);
 
   pointcloud.LOD = defaultLOD;
-  pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
+  // pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
   pointcloud.moveToOrigin();
-  pointcloud.moveToGroundPlane();
+  // pointcloud.moveToGroundPlane();
 
 }
 
