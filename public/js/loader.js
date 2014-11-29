@@ -1,4 +1,4 @@
-var defaultPointSize = 0.01;
+var defaultPointSize = 0.02;
 // Default Level of Detail
 var defaultLOD = 10000;
 var pointcloudPath = "/js/scene/cloud.js";
