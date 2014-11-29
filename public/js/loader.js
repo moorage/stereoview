@@ -55,7 +55,7 @@ function init(){
   document.body.appendChild(renderer.domElement);
 
   // camera and controls
-  camera.position.set(1, 5, 1);
+  camera.position.set(-1, 2, -8);
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0, 0 );
   camera.lookAt(controls.target);
@@ -67,8 +67,25 @@ function init(){
   scene.add(pointcloud);
 
   pointcloud.LOD = defaultLOD;
+  
+  // Un-Flip y axis
+  // pointcloud.applyMatrix(new THREE.Matrix4().set(
+  //     1,0,0,0,
+  //     0,-1,0,0,
+  //     0,0,1,0,
+  //     0,0,0,1
+  // ));
+  
+  // Un-Flip y and z
+  // pointcloud.applyMatrix(new THREE.Matrix4().set(
+  //     1,0,0,0,
+  //     0,0,1,0,
+  //     0,1,0,0,
+  //     0,0,0,1
+  // ));
+  
   // pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-  pointcloud.moveToOrigin();
+  //pointcloud.moveToOrigin();
   // pointcloud.moveToGroundPlane();
 
 }
