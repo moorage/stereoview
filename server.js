@@ -41,7 +41,10 @@ var server = http.createServer(function(request, response) {
   var uri = url.parse(request.url).pathname
     , filename = path.join(process.cwd(), STATIC_DIR, uri);
   
-  if (uri == '/') {
+  // console.log("uri: " + uri, "   pathname: " + url.parse(request.url).pathname)
+  
+  if (uri == "/") {
+    // console.log("    -> renderViewer(...)")
     renderViewer(response);
     return;
   }
@@ -49,7 +52,10 @@ var server = http.createServer(function(request, response) {
   // else
   fs.exists(filename, function(exists) {
     if(!exists) {
-      renderViewer(response);
+      response.writeHead(404, {"Content-Type": "text/plain"});
+      response.write(filename + " not found\n");
+      response.end();
+      console.log(request.url + " -> 404 not found")
       return;
     }
  
@@ -75,7 +81,8 @@ var server = http.createServer(function(request, response) {
         contentType = 'text/html';
       }
       
-      
+
+      // console.log("    -> 'Content-Type': " + contentType);
       response.writeHead(200, {"Content-Type": contentType});
       response.write(file, "binary");
       response.end();
