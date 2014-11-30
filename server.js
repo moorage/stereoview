@@ -4,7 +4,8 @@ var http = require("http"),
   fs = require("fs"),
   mime   = require('mime');
 
-var STATIC_DIR = "public"
+var STATIC_DIR = "public";
+var POINTCLOUD_PATH = "/js/scene/cloud.js";
 
 if (typeof String.prototype.endsWith !== 'function') {
     String.prototype.endsWith = function(suffix) {
@@ -38,56 +39,71 @@ function renderViewer(response) {
 
 var server = http.createServer(function(request, response) {
 
-  var uri = url.parse(request.url).pathname
+  var url_parts = url.parse(request.url, true)
+    , uri = url_parts.pathname
+    , params = url_parts.query
     , filename = path.join(process.cwd(), STATIC_DIR, uri);
   
   // console.log("uri: " + uri, "   pathname: " + url.parse(request.url).pathname)
   
+  // base url
   if (uri == "/") {
     // console.log("    -> renderViewer(...)")
     renderViewer(response);
     return;
   }
   
-  // else
-  fs.exists(filename, function(exists) {
-    if(!exists) {
-      response.writeHead(404, {"Content-Type": "text/plain"});
-      response.write(filename + " not found\n");
+  // long poll
+  else if (uri == "/reloader.json") {
+    console.log("refreshing!  params:", params);
+    pointcloudFilename = path.join(process.cwd(), STATIC_DIR, POINTCLOUD_PATH);
+    fs.stat(pointcloudFilename, function(err, stats) {
+      response.writeHead(200, {"Content-Type": 'application/json'});
+      response.write('{"lastUpdated":"'+stats.mtime+'", "pointcloudPath": "'+POINTCLOUD_PATH+'"}');
       response.end();
-      console.log(request.url + " -> 404 not found")
-      return;
-    }
- 
-    if (fs.statSync(filename).isDirectory()) filename += '/index.html';
- 
-    
-    fs.readFile(filename, "binary", function(err, file) {
-      if(err) {        
-        response.writeHead(500, {"Content-Type": "text/plain"});
-        response.write(err + "\n");
+    });
+  }
+  
+  else {
+    fs.exists(filename, function(exists) {
+      if(!exists) {
+        response.writeHead(404, {"Content-Type": "text/plain"});
+        response.write(filename + " not found\n");
         response.end();
+        console.log(request.url + " -> 404 not found")
         return;
       }
  
-      var contentType = 'application/octet-stream';
-      if (filename.endsWith('.css')) {
-        contentType = 'text/css';
-      } else if (filename.endsWith('.js')) {
-        contentType = 'application/javascript';
-      } else if (filename.endsWith('.json')) {
-        contentType = 'application/json';
-      } else if (filename.endsWith('.html')) {
-        contentType = 'text/html';
-      }
+      if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+ 
+    
+      fs.readFile(filename, "binary", function(err, file) {
+        if(err) {        
+          response.writeHead(500, {"Content-Type": "text/plain"});
+          response.write(err + "\n");
+          response.end();
+          return;
+        }
+ 
+        var contentType = 'application/octet-stream';
+        if (filename.endsWith('.css')) {
+          contentType = 'text/css';
+        } else if (filename.endsWith('.js')) {
+          contentType = 'application/javascript';
+        } else if (filename.endsWith('.json')) {
+          contentType = 'application/json';
+        } else if (filename.endsWith('.html')) {
+          contentType = 'text/html';
+        }
       
 
-      // console.log("    -> 'Content-Type': " + contentType);
-      response.writeHead(200, {"Content-Type": contentType});
-      response.write(file, "binary");
-      response.end();
+        // console.log("    -> 'Content-Type': " + contentType);
+        response.writeHead(200, {"Content-Type": contentType});
+        response.write(file, "binary");
+        response.end();
+      });
     });
-  });
+  }
 });
  
 server.listen(8000);

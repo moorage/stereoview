@@ -33,4 +33,8 @@ This directory is the source of potree.  Whenever updating, just drag and drop o
 
 Example:
 
- `~/PATH_TO/PotreeConverter/build/PotreeConverter/PotreeConverter -o ~/PATH_TO/stereoview/public/js/scene --source ~/Desktop/out3.ply`
+ `~/PATH_TO/PotreeConverter/build/PotreeConverter/PotreeConverter -o ~/PATH_TO/stereoview/public/js/scene -l 1000 -s 0.01 -p js/scene/ -f rgb --source ~/PATH_TO/out3.ply`
+ 
+On Matt's Machine:
+ 
+`~/Projects/opensource/moorage/PotreeConverter/build/PotreeConverter/PotreeConverter -o ~/Projects/thrivesmart/stereoview/public/js/scene/ -l 1000 -s 0.01 -p js/scene/ -f rgb --source ~/Desktop/viz/out4.ply `

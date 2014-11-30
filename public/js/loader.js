@@ -2,8 +2,11 @@ var defaultPointSize = 0.02;
 // Default Level of Detail
 var defaultLOD = 10000;
 var pointcloudPath = "/js/scene/cloud.js";
-// var pointcloudPath = "/js/scene/out1.ply"; // potree can't read .ply files 
-   
+// var pointcloudPath = "/js/scene/out1.ply"; // potree can't read .ply files
+var reloaderUrl = "/reloader.json" 
+var reloaderHttpReq = null;
+var reloaderTimeout = null;
+var cloudjsLastUpdated = null;
 
 
 var renderer;
@@ -17,7 +20,7 @@ function buildAxis( src, dst, colorHex, dashed ) {
     mat; 
 
   if(dashed) {
-    mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
+    mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 0.5, gapSize: 0.5 });
   } else {
     mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
   }
@@ -66,7 +69,6 @@ function init(){
   pointcloudMaterial = new THREE.PointCloudMaterial( { size: defaultPointSize, vertexColors: true } );
   pointcloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
   scene.add(pointcloud);
-
   pointcloud.LOD = defaultLOD;
   
   // Un-Flip y axis
@@ -91,13 +93,64 @@ function init(){
 
 }
 
+
+function reloadNow() {
+  if (reloaderHttpReq != null) {
+    return false;
+  }
+  
+  
+  if (window.XMLHttpRequest) { // Mozilla, Safari, ...
+    reloaderHttpReq = new XMLHttpRequest();
+  } else if (window.ActiveXObject) { // IE
+    try { reloaderHttpReq = new ActiveXObject("Msxml2.XMLHTTP"); } 
+    catch (e) {
+      try { reloaderHttpReq = new ActiveXObject("Microsoft.XMLHTTP"); } 
+      catch (e) {}
+    }
+  }
+
+  if (!reloaderHttpReq) {
+    alert('Giving up :( Cannot create an XMLHTTP instance');
+    return false;
+  }
+  reloaderHttpReq.onreadystatechange = function() {
+		if (reloaderHttpReq.readyState === 4) {
+			if (reloaderHttpReq.status === 200) {
+				var data = JSON.parse(reloaderHttpReq.response);
+        reloaderHttpReq = null;
+        
+        if (cloudjsLastUpdated == null) { cloudjsLastUpdated = data.lastUpdated; }
+        
+        if (cloudjsLastUpdated != data.lastUpdated) { console.log("updating");
+          cloudjsLastUpdated = data.lastUpdated;
+          scene.remove(pointcloud);
+          var pco = POCLoader.load(data.pointcloudPath);
+          pointcloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
+          scene.add(pointcloud);
+          pointcloud.LOD = defaultLOD;
+          reloaderTimeout = window.setTimeout(reloadNow, 250);
+        } else {
+          reloaderTimeout = window.setTimeout(reloadNow, 250);
+        }
+			} else {
+				console.log('Failed to load reloader! HTTP status: ' + reloaderHttpReq.status + ", file: " + reloaderUrl);
+        reloaderHttpReq = null;
+        reloaderTimeout = window.setTimeout(reloadNow, 250);
+			}
+		}
+  };
+  reloaderHttpReq.open('GET', reloaderUrl + "?cloudjsLastUpdated="+cloudjsLastUpdated);
+  reloaderHttpReq.send();
+}
+
 function render() {
   requestAnimationFrame(render);
-
   pointcloud.update(camera);
-
   renderer.render(scene, camera);
-};
+}
+
 
 init();
 render();
+reloadNow();
